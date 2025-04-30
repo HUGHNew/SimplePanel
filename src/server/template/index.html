@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Server Status Monitor - Overview{% endblock %}
+
+{% block header %}Server Status Overview{% endblock %}
+
+{% block content %}
+    <div class="overview">
+        <p>Last updated: {{ current_time }}</p>
+        <p>Monitoring {{ servers|length }} servers</p>
+    </div>
+    
+    <div class="server-block">
+        {% for server in servers %}
+        <div class="card server-card {% if server.status == 'critical' %}critical{% elif server.status == 'warning' %}warning{% else %}normal{% endif %}">
+            <h2>{{ server.hostname }}</h2>
+            <p>Last reported: {{ server.last_updated }}</p>
+            
+            <div class="system-info">
+                <div>OS: {{ server.get('os', 'Unknown') }}</div>
+                <div>Uptime: {{ server.get('uptime_days', 0)|round(1) }} days</div>
+                <div>CPU: {{ server.cpu.model }}</div>
+                <div>Cores: {{ server.cpu.cores }}</div>
+            </div>
+            
+            <h3>CPU Usage: {{ server.cpu.usage }}%</h3>
+            <div class="gauge">
+                <div class="gauge-fill" style="width: {{ server.cpu.usage }}%;"></div>
+            </div>
+            
+            {% if server.gpu.available %}
+            <h3>GPU Information</h3>
+            {% for gpu in server.gpu.gpus %}
+            <div class="gpu-info">
+                <h4>{{ gpu.name }} (GPU #{{ gpu.index }})</h4>
+                <p>Utilization: {{ gpu.utilization }}%</p>
+                <div class="gauge">
+                    <div class="gauge-fill" style="width: {{ gpu.utilization }}%;"></div>
+                </div>
+                <p>Memory: {{ gpu.memory_used_mb|round(0) }} MB / {{ gpu.memory_total_mb|round(0) }} MB ({{ gpu.memory_used_percent }}%)</p>
+                <div class="gauge">
+                    <div class="gauge-fill" style="width: {{ gpu.memory_used_percent }}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+            
+            <h3>Memory Usage: {{ server.memory.used_percent }}%</h3>
+            <div class="gauge">
+                <div class="gauge-fill" style="width: {{ server.memory.used_percent }}%;"></div>
+            </div>
+            <p>{{ server.memory.available_mb|round(0) }} MB available of {{ server.memory.total_mb|round(0) }} MB total</p>
+            
+            {% if server.memory.swap.total_mb > 0 %}
+            <h3>Swap Usage: {{ server.memory.swap.used_percent }}%</h3>
+            <div class="gauge">
+                <div class="gauge-fill" style="width: {{ server.memory.swap.used_percent }}%;"></div>
+            </div>
+            <p>{{ server.memory.swap.used_mb|round(0) }} MB used of {{ server.memory.swap.total_mb|round(0) }} MB total</p>
+            {% endif %}
+            
+            <h3>Disk Information</h3>
+            {% for disk in server.disk.disks %}
+            <div class="disk-info">
+                <h4>{{ disk.mount_point }} ({{ disk.device }})</h4>
+                <p>Usage: {{ disk.used_percent }}%</p>
+                <div class="gauge">
+                    <div class="gauge-fill" style="width: {{ disk.used_percent }}%;"></div>
+                </div>
+                <p>{{ disk.free_gb }} GB free of {{ disk.total_gb }} GB total</p>
+            </div>
+            {% endfor %}
+            
+            <a href="/server/{{ server.hostname }}">View History</a>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

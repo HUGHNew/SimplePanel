@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Server Status - {{ hostname }}{% endblock %}
+
+{% block header %}{{ hostname }} - History{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>{{ hostname }} - Status History</h2>
+        <p>Showing last {{ history|length }} reports</p>
+        
+        <table>
+            <tr>
+                <th>Timestamp</th>
+                <th>CPU Usage</th>
+                {% if has_gpu %}<th>GPU Usage</th>{% endif %}
+                <th>Memory Usage</th>
+                <th>Disk Usage</th>
+                <th>Uptime (days)</th>
+                <th>Status</th>
+            </tr>
+            {% for entry in history %}
+            <tr>
+                <td>{{ entry.timestamp }}</td>
+                <td>{{ entry.cpu.usage }}%</td>
+                {% if has_gpu %}<td>{{ entry.gpu.gpus[0].utilization }}%</td>{% endif %}
+                <td>{{ entry.memory.used_percent }}%</td>
+                <td>{{ get_avg_disk_usage(entry) }}%</td>
+                <td>{{ entry.get('uptime_days', 0)|round(1) }}</td>
+                <td class="{% if entry.status == 'critical' %}critical{% elif entry.status == 'warning' %}warning{% else %}normal{% endif %}">
+                    {{ entry.status }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    {% if latest %}
+    <div class="card server-card">
+        <h2>Latest Details</h2>
+        
+        <div class="system-info">
+            <div>OS: {{ latest.get('os', 'Unknown') }}</div>
+            <div>Uptime: {{ latest.get('uptime_days', 0)|round(1) }} days</div>
+            <div>Hostname: {{ latest.hostname }}</div>
+            <div>CPU: {{ latest.cpu.model }}</div>
+            <div>Cores: {{ latest.cpu.cores }}</div>
+        </div>
+        
+        <h3>CPU Usage: {{ latest.cpu.usage }}%</h3>
+        <div class="gauge">
+            <div class="gauge-fill" style="width: {{ latest.cpu.usage }}%;"></div>
+        </div>
+        
+        {% if latest.gpu.available %}
+        <h3>GPU Information</h3>
+        {% for gpu in latest.gpu.gpus %}
+        <div class="gpu-info">
+            <h4>{{ gpu.name }} (GPU #{{ gpu.index }})</h4>
+            <p>Utilization: {{ gpu.utilization }}%</p>
+            <div class="gauge">
+                <div class="gauge-fill" style="width: {{ gpu.utilization }}%;"></div>
+            </div>
+            <p>Memory: {{ gpu.memory_used_mb|round(0) }} MB / {{ gpu.memory_total_mb|round(0) }} MB ({{ gpu.memory_used_percent }}%)</p>
+            <div class="gauge">
+                <div class="gauge-fill" style="width: {{ gpu.memory_used_percent }}%;"></div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <h3>Memory Usage: {{ latest.memory.used_percent }}%</h3>
+        <div class="gauge">
+            <div class="gauge-fill" style="width: {{ latest.memory.used_percent }}%;"></div>
+        </div>
+        <p>{{ latest.memory.available_mb|round(0) }} MB available of {{ latest.memory.total_mb|round(0) }} MB total</p>
+        
+        {% if latest.memory.swap.total_mb > 0 %}
+        <h3>Swap Usage: {{ latest.memory.swap.used_percent }}%</h3>
+        <div class="gauge">
+            <div class="gauge-fill" style="width: {{ latest.memory.swap.used_percent }}%;"></div>
+        </div>
+        <p>{{ latest.memory.swap.used_mb|round(0) }} MB used of {{ latest.memory.swap.total_mb|round(0) }} MB total</p>
+        {% endif %}
+        
+        <h3>Disk Information</h3>
+        {% for disk in latest.disk.disks %}
+        <div class="disk-info">
+            <h4>{{ disk.mount_point }} ({{ disk.device }})</h4>
+            <p>Usage: {{ disk.used_percent }}%</p>
+            <div class="gauge">
+                <div class="gauge-fill" style="width: {{ disk.used_percent }}%;"></div>
+            </div>
+            <p>{{ disk.free_gb }} GB free of {{ disk.total_gb }} GB total</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endblock %}

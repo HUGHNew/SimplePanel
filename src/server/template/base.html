@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Server Status Monitor{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .server-block {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        .server-card {
+            width: 300px;
+            border-left: 5px solid #4CAF50;
+        }
+        .critical {
+            border-left: 5px solid #f44336;
+        }
+        .warning {
+            border-left: 5px solid #ff9800;
+        }
+        .normal {
+            border-left: 5px solid #4CAF50;
+        }
+        .gauge {
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .gauge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #FFEB3B, #f44336);
+            border-radius: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .nav {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            padding: 10px 15px;
+            background: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .system-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .system-info div {
+            background: #f2f2f2;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .disk-info, .gpu-info {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{% block header %}Server Status Monitor{% endblock %}</h1>
+        </div>
+        
+        <div class="nav">
+            <a href="/">Home</a>
+            <a href="/history">History</a>
+        </div>
+        
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

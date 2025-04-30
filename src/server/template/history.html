@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Server Status Monitor - Servers{% endblock %}
+
+{% block header %}Server list{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>All Monitored Servers</h2>
+        <table>
+            <tr>
+                <th>Hostname</th>
+                <th>OS</th>
+                <th>CPU</th>
+                <th>Memory</th>
+                <th>Last Report</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            {% for server in servers %}
+            <tr>
+                <td>{{ server.hostname }}</td>
+                <td>{{ server.get('os', 'Unknown') }}</td>
+                <td>{{ server.cpu.model }} ({{ server.cpu.cores }} cores)</td>
+                <td>{{ server.memory.total_mb|round(0) }} MB</td>
+                <td>{{ server.last_updated }}</td>
+                <td class="{% if server.status == 'critical' %}critical{% elif server.status == 'warning' %}warning{% else %}normal{% endif %}">
+                    {{ server.status }}
+                </td>
+                <td><a href="/server/{{ server.hostname }}">View Details</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

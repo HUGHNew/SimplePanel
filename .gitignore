@@ -1,0 +1,6 @@
+dist
+__pycache__
+
+src/server/data
+
+test.html
