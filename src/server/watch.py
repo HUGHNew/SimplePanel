@@ -189,7 +189,7 @@ def create_server_block(data_dir: str) -> tuple[Panel, dict[str, list[dict]]]:
             size=data["gpu"]["count"] + 1 + table_extra_size,
         ),
     ]
-    total_size = sum([item.size for item in items])
+    total_size = sum([item.size or 0 for item in items])
     layout = Layout(size=total_size)
     layout.split_column(*items)
 
