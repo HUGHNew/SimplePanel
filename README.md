@@ -26,6 +26,7 @@
 - 使用FastAPI框架构建
 - 使用Jinja2模板引擎生成HTML页面
 - 数据以JSON格式存储在`data/<hostname>/<datetime>.json`
+- 通过`watch.py`在终端查看当前状态
 
 ## 安装与使用
 
@@ -40,6 +41,15 @@ pip install fastapi uvicorn jinja2
 3. 启动服务器：
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+4. [可选] 终端查看状态：
+```bash
+# 1. TUI
+python3 watch.py
+
+# 2. Web
+lynx "http://localhost:8000"
 ```
 
 ### 客户端安装
