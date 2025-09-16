@@ -1,9 +1,10 @@
+#!/bin/env python3
+# -*- coding: utf-8 -*-
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [rich]
 # ///
 
-# -*- coding: utf-8 -*-
 
 import argparse
 import json
@@ -186,7 +187,7 @@ def create_server_block(data_dir: str) -> tuple[Panel, dict[str, list[dict]]]:
         Layout(
             create_gpu_section(data["gpu"]),
             name="gpu",
-            size=data["gpu"]["count"] + 1 + table_extra_size,
+            size=data["gpu"]["count"] + 1 + table_extra_size if data["gpu"]["available"] else 0,
         ),
     ]
     total_size = sum([item.size or 0 for item in items])
@@ -217,6 +218,23 @@ def create_danger_block(disk_info: dict[str, list[dict]]) -> Panel:
             )
     return Panel(disk_table, title="Disks in danger")
 
+def loop_latest_data(data_root: str):
+    for host in os.listdir(data_root):
+        yield host, load_data(os.path.join(data_root, host))
+
+def create_offline_block(data_root: str) -> Panel|None:
+    table = create_default_table()
+    table.add_column("主机", style="cyan")
+    table.add_column("最后更新时间", style="green")
+
+    offline_delta = timedelta(hours=8)
+    for host, data in loop_latest_data(data_root):
+        update_time = datetime.fromisoformat(data["timestamp"])
+        current_time = datetime.now()
+        if current_time - update_time > offline_delta:
+            table.add_row(host, data["timestamp"])
+    return Panel(table, title="Offline servers") if table.row_count > 0 else None
+
 def display_latest(data_root: str):
     console = Console()
     danger_disks = {}
@@ -226,6 +244,9 @@ def display_latest(data_root: str):
         danger_disks.update(disks)
         console.print("\n")
     console.print(create_danger_block(danger_disks))
+    offline_block = create_offline_block(data_root)
+    if offline_block:
+        console.print(offline_block)
 
 
 def get_args():
